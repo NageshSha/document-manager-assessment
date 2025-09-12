@@ -19,11 +19,11 @@ export default function Favorites() {
   };
 
   useEffect(() => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        localStorage.clear();
-        navigate("/login");
-      }
+    const token = localStorage.getItem('token');
+    if (!token) {
+      localStorage.clear();
+      navigate("/login");
+    }
   }, []);
 
   useEffect(() => {

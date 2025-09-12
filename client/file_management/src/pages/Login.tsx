@@ -27,12 +27,12 @@ const Login: React.FC = () => {
         e?.preventDefault();
         try {
             // 👉 Hardcoded bypass
-            /*
+
             if (username === "admin" && password === "adminpassword") {
                 localStorage.setItem("token", "hardcoded_admin_token");
                 navigate("/myFiles");
                 return;
-            } */
+            }
 
             // Call API with static token for user = admin
             const response = await fetch("http://127.0.0.1:8000/api/auth/login/", {

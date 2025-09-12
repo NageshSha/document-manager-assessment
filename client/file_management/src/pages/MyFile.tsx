@@ -8,6 +8,7 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  TablePagination,
   Paper,
   IconButton,
   Dialog,
@@ -27,6 +28,7 @@ import { useNavigate } from "react-router-dom";
 
 interface FileType {
   name: string;
+  type: string;
   version: number;
   favorite?: boolean;
   versions?: string[];
@@ -36,14 +38,17 @@ export default function MyFiles() {
   const [files, setFiles] = useState<FileType[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedFile, setSelectedFile] = useState<FileType | null>(null);
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const navigate = useNavigate();
+  let number_of_files = 0;
 
   useEffect(() => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        localStorage.clear();
-        navigate("/login");
-      }
+    const token = localStorage.getItem('token');
+    if (!token) {
+      localStorage.clear();
+      navigate("/login");
+    }
   }, []);
 
   useEffect(() => {
@@ -52,19 +57,29 @@ export default function MyFiles() {
       setFiles(JSON.parse(stored));
     } else {
       const initial = [
-        { name: "DummyFile.pdf", version: 1, versions: ["v1"], favorite: false },
+        { name: "DummyFile.txt", type: "test/plain", version: 1, versions: ["v1"], favorite: false },
       ];
       setFiles(initial);
       localStorage.setItem("files", JSON.stringify(initial));
     }
   }, []);
 
- 
+
   useEffect(() => {
     if (files.length > 0) {
+      number_of_files = files.length;
       localStorage.setItem("files", JSON.stringify(files));
     }
   }, [files]);
+
+  const handleChangePage = (_event: any, newPage: React.SetStateAction<number>) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: { target: { value: string; }; }) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
   const handleUpload = () => {
     const input = document.createElement("input");
@@ -74,17 +89,29 @@ export default function MyFiles() {
       if (file) {
         setFiles((prev) => [
           ...prev,
-          { name: file.name, version: 1, versions: ["v1"], favorite: false },
+          { name: file.name, type: file.type, version: 1, versions: ["v1"], favorite: false },
         ]);
       }
     };
     input.click();
   };
 
- const handleDownload = (file: FileType) => {
-  const latestVersion = file.versions?.[file.versions.length - 1] || `v${file.version}`;
-  alert(`Downloading ${file.name} (${latestVersion})`);
-};
+  const handleDownload = (file: FileType) => {
+    const latestVersion = file.versions?.[file.versions.length - 1] || `v${file.version}`;
+    alert(`Downloading ${file.name} (${latestVersion})`);
+    const fileContent = localStorage.getItem('files');
+    if (fileContent) {
+      const blob = new Blob([fileContent], { type: file.type });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = file.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+  };
 
 
   const handleUploadNew = (file: FileType) => {
@@ -92,10 +119,10 @@ export default function MyFiles() {
       prev.map((f) =>
         f.name === file.name
           ? {
-              ...f,
-              version: f.version + 1,
-              versions: [...(f.versions || []), `v${f.version + 1}`],
-            }
+            ...f,
+            version: f.version + 1,
+            versions: [...(f.versions || []), `v${f.version + 1}`],
+          }
           : f
       )
     );
@@ -117,7 +144,7 @@ export default function MyFiles() {
   const handleGoToFavorites = () => {
     navigate("/favorites");
   };
-  
+
   const handleLogOut = () => {
     localStorage.clear();
     navigate("/login");
@@ -128,7 +155,7 @@ export default function MyFiles() {
     <Box
       sx={{
         minHeight: "100vh",
-        bgcolor: "white", 
+        bgcolor: "white",
         display: "flex",
         justifyContent: "center",
         alignItems: "flex-start",
@@ -216,6 +243,15 @@ export default function MyFiles() {
             ))}
           </TableBody>
         </Table>
+        <TablePagination
+          rowsPerPageOptions={[5, 10]}
+          component="div"
+          count={number_of_files}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
       </Paper>
 
       {/* Versions dialog */}
