@@ -20,22 +20,24 @@ const Login: React.FC = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const BACKEND_SERVER = 'http://127.0.0.1:8000';
+    const LOGIN_API = '/api/auth/login/';
 
 
 
     const handleSubmit = async (e?: React.FormEvent) => {
         e?.preventDefault();
         try {
-            // 👉 Hardcoded bypass
-
+            // 👉 Hardcoded bypass for local unit testing
+            /*
             if (username === "admin" && password === "adminpassword") {
                 localStorage.setItem("token", "hardcoded_admin_token");
                 navigate("/myFiles");
                 return;
             }
-
-            // Call API with static token for user = admin
-            const response = await fetch("http://127.0.0.1:8000/api/auth/login/", {
+            */
+            // Call API with static token for user = admin and password = adminpassword
+            const response = await fetch(BACKEND_SERVER+LOGIN_API, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

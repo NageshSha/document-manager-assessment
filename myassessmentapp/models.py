@@ -1,5 +1,4 @@
 from django.db import models
-# NS
 
 def upload_to(instance, filename):
     return f'/filelocation/{instance.owner.username}/{filename}'
